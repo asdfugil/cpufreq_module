@@ -1,0 +1,33 @@
+{
+    "configurations": [
+        {
+            "name": "Mac",
+            "defines": [
+                "TARGET_OS_OSX=0",
+                "TARGET_OS_MACCATALYST=0",
+                "_GNU_SOURCE",
+                "DER_TAG_SIZE=8"
+            ],
+            "macFrameworkPath": [
+                "/Applications/Xcode-16.0.0-Beta.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/Library/Frameworks"
+            ],
+            "cStandard": "c17",
+            "cppStandard": "c++17",
+            "intelliSenseMode": "macos-clang-arm64",
+            "includePath": [
+                "${workspaceFolder}/../PongoOS/src/drivers",
+                "${workspaceFolder}/../PongoOS/include",
+                "${workspaceFolder}/../PongoOS/apple-include",
+                "${workspaceFolder}/../PongoOS/src/kernel",
+                "${workspaceFolder}/../PongoOS/newlib/aarch64-none-darwin/include"
+            ],
+            "compilerArgs": [
+                "-ffreestanding",
+                "-nostdlib",
+                "-nostdlibinc",
+                "-U__nonnull"
+            ]
+        }
+    ],
+    "version": 4
+}

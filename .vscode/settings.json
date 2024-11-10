@@ -1,0 +1,9 @@
+{
+    "files.associations": {
+        "cpufreq.h": "c",
+        "utils.h": "c",
+        "pongo.h": "c",
+        "errno.h": "c",
+        "cpufreq_private.h": "c"
+    }
+}
