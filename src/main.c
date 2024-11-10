@@ -1,0 +1,121 @@
+#include <errno.h>
+#include <pongo.h>
+
+#include "cpufreq_private.h"
+
+uint64_t get_frequency_for_state(int state)
+{
+    return data.hw_config->get_frequency_for_state(data.hw_config->cluster_base, state);
+}
+
+int set_state(int state)
+{
+    return data.hw_config->set_state(data.hw_config->cluster_base, state);
+}
+
+uint64_t get_state(void)
+{
+    return data.hw_config->get_state(data.hw_config->cluster_base);
+}
+
+uint64_t get_target_state(void)
+{
+    return data.hw_config->get_target_state(data.hw_config->cluster_base);
+}
+
+uint64_t get_core_type_for_state(int state)
+{
+    if (data.hw_config->get_core_type_for_state)
+        return data.hw_config->get_core_type_for_state(data.hw_config->cluster_base, state);
+    else
+        return CORE_TYPE_UNKNOWN;
+}
+
+void cpufreq_show(const char *cmd, char *args)
+{
+    uint32_t state = get_state();
+    uint32_t target = get_target_state();
+    uint64_t freq = get_frequency_for_state(state);
+
+    printf("Current state           : %u\n", state);
+    printf("Current target state    : %u\n", target);
+    printf("Current CPU frequency   : %llu Hz\n", freq);
+
+    if (data.hw_config->get_core_type_for_state)
+        printf("Current CPU type        : %s\n", core_type_array[get_core_type_for_state(state)]);
+}
+
+void cpufreq_dump(const char *cmd, char *args)
+{
+    printf("Available states:\n");
+    for (uint32_t i = 1; i <= data.max_configured_pstate; i++) {
+        printf("CPU state       : %u\n", i);
+        printf("CPU frequency   : %llu Hz\n", get_frequency_for_state(i));
+        if (data.hw_config->get_core_type_for_state)
+            printf("CPU type        : %s\n", core_type_array[get_core_type_for_state(i)]);
+        printf("\n");
+    }
+}
+
+void cpufreq_set(const char *cmd, char *args)
+{
+    if (!*args) {
+        printf("usage: cpufreq set [state]\n");
+        printf("\nState is a number from 0 to a device-dependent maximum value\n");
+        printf("Run `cpufreq dump` to get more information.\n");
+        return;
+    }
+
+    uint64_t state = strtoull(args, NULL, 0);
+    if (!state || (uint32_t)state > data.max_configured_pstate) {
+        printf("Invalid pstate specified. Max pstate is %u\n", data.max_configured_pstate);
+        return;
+    }
+
+    set_state(state);
+}
+
+#define CPUFREQ_COMMAND(_name, _desc, _cb)                                                         \
+    {                                                                                              \
+        .name = _name, .desc = _desc, .cb = _cb                                                    \
+    }
+void cpufreq_help(const char *cmd, char *args);
+
+static struct cpufreq_command command_table[] = {
+    CPUFREQ_COMMAND("help", "Show usage", cpufreq_help),
+    CPUFREQ_COMMAND("dump", "Dump available CPU states", cpufreq_dump),
+    CPUFREQ_COMMAND("set", "Set CPU state", cpufreq_set),
+    CPUFREQ_COMMAND("show", "Get current CPU information", cpufreq_show),
+};
+
+void cpufreq_help(const char *cmd, char *args)
+{
+    printf("cpufreq usage: cpufreq [subcommand] <subcommand options>\nsubcommands:\n");
+    for (int i = 0; i < sizeof(command_table) / sizeof(struct cpufreq_command); i++) {
+        if (command_table[i].name) {
+            printf("%16s | %s\n", command_table[i].name,
+                   command_table[i].desc ? command_table[i].desc : "no description");
+        }
+    }
+}
+
+void cpufreq_cmd(const char *cmd, char *args)
+{
+    char *arguments = command_tokenize(args, 0x1ff - (args - cmd));
+    struct cpufreq_command *fallback_cmd = NULL;
+    if (arguments) {
+        for (int i = 0; i < sizeof(command_table) / sizeof(struct cpufreq_command); i++) {
+            if (command_table[i].name && !strcmp("help", command_table[i].name)) {
+                fallback_cmd = &command_table[i];
+            }
+            if (command_table[i].name && !strcmp(args, command_table[i].name)) {
+                command_table[i].cb(args, arguments);
+                return;
+            }
+        }
+        if (*args)
+            printf("cpufreq: invalid command %s\n", args);
+        if (fallback_cmd)
+            return fallback_cmd->cb(cmd, arguments);
+    }
+}
