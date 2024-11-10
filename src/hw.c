@@ -87,6 +87,7 @@ const struct cpufreq_hw_config t8012_config = {
     .cluster_base = 0x202f00000,
     .voltage_ctl = 0x20e0a0000,
     .hw_init = s8000_hw_init,
+    .get_core_type_for_state = get_core_type_for_state_t8010,
     .get_frequency_for_state = get_frequency_for_state_t8010,
     .set_state = set_state_s8000,
     .get_state = get_state_s8000,
