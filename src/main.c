@@ -43,6 +43,9 @@ void cpufreq_show(const char *cmd, char *args)
 
     if (data.hw_config->get_core_type_for_state)
         printf("Current CPU type        : %s\n", core_type_array[get_core_type_for_state(state)]);
+
+    if ((state > data.max_nonboost_pstate) && (state <= data.max_configured_pstate))
+        printf("Boost state\n");
 }
 
 void cpufreq_dump(const char *cmd, char *args)
@@ -53,6 +56,10 @@ void cpufreq_dump(const char *cmd, char *args)
         printf("CPU frequency   : %llu Hz\n", get_frequency_for_state(i));
         if (data.hw_config->get_core_type_for_state)
             printf("CPU type        : %s\n", core_type_array[get_core_type_for_state(i)]);
+
+        if ((i > data.max_nonboost_pstate) && (i <= data.max_configured_pstate))
+            printf("Boost state\n");
+
         printf("\n");
     }
 }

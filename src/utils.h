@@ -54,4 +54,13 @@ static inline int poll32(uint64_t addr, uint64_t mask, uint64_t target, uint64_t
     return -1;
 }
 
+static inline uint64_t mask64(uint64_t addr, uint64_t clear, uint64_t set)
+{
+    uint64_t reg = read64(addr);
+    reg &= ~clear;
+    reg |= set;
+    write64(addr, reg);
+    return reg;
+}
+
 #endif

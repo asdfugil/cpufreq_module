@@ -1,9 +1,9 @@
 PONGO_SRC ?= ../PongoOS
 CC ?= clang -arch arm64
 CFLAGS +=  -I$(PONGO_SRC)/include -I$(PONGO_SRC)/src/kernel -I$(PONGO_SRC)/newlib/aarch64-none-darwin/include -Iinclude -I$(PONGO_SRC)/apple-include
-CFLAGS += -I$(PONGO_SRC)/src/drivers -Os -ffreestanding -nostdlib -U__nonnull -DTARGET_OS_OSX=0 -DTARGET_OS_MACCATALYST=0 -D_GNU_SOURCE -DDER_TAG_SIZE=8
+CFLAGS += -I$(PONGO_SRC)/src/drivers -Oz -ffreestanding -nostdlib -U__nonnull -DTARGET_OS_OSX=0 -DTARGET_OS_MACCATALYST=0 -D_GNU_SOURCE -DDER_TAG_SIZE=8
 CFLAGS += -fvisibility=hidden
-LDFLAGS += -Wl,-kext -Wl,-dead_strip -flto=thin -fno-stack-protector
+LDFLAGS += -Wl,-kext -Wl,-dead_strip -flto=full -fno-stack-protector
 
 all: cpufreq
 

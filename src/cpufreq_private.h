@@ -18,6 +18,44 @@
 #define CLUSTER_PSTATE_STATUS_TARGET_PS_S8000    GENMASK(3, 0)
 #define CLUSTER_PSTATE_STATUS_ACTUAL_PS_S8000    GENMASK(7, 4)
 
+
+// PSINFO: holds the frequency, voltage and boost information for each P-State
+// state 0 - 7, PSINFO1
+#define CLUSTER_PSINFO1_OFF_S5L8960X 0x206b8
+// state 8 - 15, PSINFO1
+#define CLUSTER_PSINFO1_EXT_OFF_S8000 0x209b8
+// state 0 - 15, PSINFO2
+#define CLUSTER_PSINFO2_OFF_S8000 0x20868
+
+// NOTE: state 8 - 15 is only available on S800X
+#define CLUSTER_PSINFO1_S5L8960X(pstate)                                                           \
+    ((pstate > 8) ? (CLUSTER_PSINFO1_EXT_OFF_S8000 + (pstate - 8) * 8)                              \
+                  : (CLUSTER_PSINFO1_OFF_S5L8960X + (pstate * 8)))
+#define CLUSTER_PSINFO2_S8000(pstate) (CLUSTER_PSINFO2_OFF_S8000 + (pstate * 8))
+
+// Starting from T8010 it's much saner with all the PSINFO's in strides
+#define CLUSTER_PSINFO_STRIDE_T8010 0x20
+
+#define CLUSTER_PSINFO_OFF_T8010 0x80000
+#define CLUSTER_PSINFO_OFF_T8015 0x70000
+
+#define CLUSTER_PSINFO1_T8010(pstate)                                                              \
+    (CLUSTER_PSINFO_OFF_T8010 + (pstate * CLUSTER_PSINFO_STRIDE_T8010))
+#define CLUSTER_PSINFO2_T8010(pstate)                                                              \
+    (CLUSTER_PSINFO_OFF_T8010 + 8 + (pstate * CLUSTER_PSINFO_STRIDE_T8010))
+#define CLUSTER_PSINFO3_T8010(pstate)                                                              \
+    (CLUSTER_PSINFO_OFF_T8010 + 0x10 + (pstate * CLUSTER_PSINFO_STRIDE_T8010))
+
+#define CLUSTER_PSINFO1_T8015(pstate)                                                              \
+    (CLUSTER_PSINFO_OFF_T8015 + (pstate * CLUSTER_PSINFO_STRIDE_T8010))
+#define CLUSTER_PSINFO2_T8015(pstate)                                                              \
+    (CLUSTER_PSINFO_OFF_T8015 + 8 + (pstate * CLUSTER_PSINFO_STRIDE_T8010))
+#define CLUSTER_PSINFO3_T8015(pstate)                                                              \
+    (CLUSTER_PSINFO_OFF_T8015 + 0x10 + (pstate * CLUSTER_PSINFO_STRIDE_T8010))
+
+#define CLUSTER_PSINFO_MAX_DVMR_WEIGHT GENMASK(43, 40)
+
+
 enum core_type { CORE_TYPE_E, CORE_TYPE_P, CORE_TYPE_UNKNOWN };
 
 static char *core_type_array[] = {"E-Core", "P-Core", "Unknown"};
@@ -30,13 +68,13 @@ struct cpufreq_command {
 
 struct cpufreq_data {
     uint32_t max_configured_pstate;
+    uint32_t max_nonboost_pstate;
     const struct cpufreq_hw_config *hw_config;
 } data;
 
 struct cpufreq_hw_config {
     uint32_t max_pstate;
     uint32_t iboot_state;
-    uint32_t pongo_state;
     uint64_t cluster_base;
     uint64_t voltage_ctl;
     void (*hw_init)(uint64_t cluster_base);

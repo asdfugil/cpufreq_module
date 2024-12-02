@@ -49,17 +49,45 @@ __attribute__((visibility("default"))) void module_entry(void)
     uint32_t max_config_state;
     for (max_config_state = data.hw_config->iboot_state + 1;
          max_config_state < data.hw_config->max_pstate; max_config_state++) {
+
         if (get_frequency_for_state(max_config_state) == iboot_freq)
             break;
+
+        uint64_t addr = 0;
+
+        switch (socnum) {
+            case 0x8000:
+            case 0x8001:
+            case 0x8003:
+                addr = data.hw_config->cluster_base + CLUSTER_PSINFO2_S8000(max_config_state);
+                break;
+            case 0x8010:
+            case 0x8011:
+            case 0x8012:
+                addr = data.hw_config->cluster_base + CLUSTER_PSINFO2_T8010(max_config_state);;
+                break;
+            case 0x8015:
+                addr = data.hw_config->cluster_base + CLUSTER_PSINFO2_T8015(max_config_state);
+                break;
+        }
+
+        if (addr && FIELD_GET(CLUSTER_PSINFO_MAX_DVMR_WEIGHT, read64(addr)) != 15) {
+            set64(addr, FIELD_PREP(CLUSTER_PSINFO_MAX_DVMR_WEIGHT, 15));
+
+            if (!data.max_nonboost_pstate)
+                data.max_nonboost_pstate = max_config_state - 1;
+        }
     }
+
+    if (!data.max_nonboost_pstate)
+        data.max_nonboost_pstate = max_config_state;
+
     data.max_configured_pstate = max_config_state - 1;
 
     set64(data.hw_config->cluster_base + 0x200f8, BIT(40));
 
-    if (data.hw_config->pongo_state) {
-        printf("cpufreq: CPU state: %llu -> %u\n", get_state(), data.hw_config->pongo_state);
-        set_state(data.hw_config->pongo_state);
-    }
+        printf("cpufreq: CPU state: %llu -> %u\n", get_state(), data.max_nonboost_pstate);
+        set_state(data.max_nonboost_pstate);
 
     command_register("cpufreq", "CPU frequency scaling", cpufreq_cmd);
     return;
