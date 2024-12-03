@@ -2,6 +2,7 @@
 #include <pongo.h>
 
 #include "cpufreq_private.h"
+#include "utils.h"
 
 uint64_t get_frequency_for_state(int state)
 {
@@ -82,6 +83,39 @@ void cpufreq_set(const char *cmd, char *args)
     set_state(state);
 }
 
+void cpufreq_unlock(const char *cmd, char *args)
+{
+    if (data.max_configured_pstate == data.max_nonboost_pstate)
+        return;
+
+    for (uint32_t i = (data.max_nonboost_pstate + 1); i <= data.max_configured_pstate; i++) {
+        uint64_t addr = 0;
+
+        switch (socnum) {
+            case 0x8000:
+            case 0x8001:
+            case 0x8003:
+                addr = data.hw_config->cluster_base + CLUSTER_PSINFO2_S8000(i);
+                break;
+            case 0x8010:
+            case 0x8011:
+            case 0x8012:
+                addr = data.hw_config->cluster_base + CLUSTER_PSINFO2_T8010(i);;
+                break;
+            case 0x8015:
+                addr = data.hw_config->cluster_base + CLUSTER_PSINFO2_T8015(i);
+                break;
+        }
+
+        if (!addr) {
+            printf("cpufreq: Don't know how to unlock boost state on this SoC\n");
+            return;
+        }
+
+        mask64(addr, CLUSTER_PSINFO_MAX_DVMR_WEIGHT, FIELD_PREP(CLUSTER_PSINFO_MAX_DVMR_WEIGHT, 15));
+    }
+}
+
 #define CPUFREQ_COMMAND(_name, _desc, _cb)                                                         \
     {                                                                                              \
         .name = _name, .desc = _desc, .cb = _cb                                                    \
@@ -93,6 +127,8 @@ static struct cpufreq_command command_table[] = {
     CPUFREQ_COMMAND("dump", "Dump available CPU states", cpufreq_dump),
     CPUFREQ_COMMAND("set", "Set CPU state", cpufreq_set),
     CPUFREQ_COMMAND("show", "Get current CPU information", cpufreq_show),
+    CPUFREQ_COMMAND("unlock", "Unlock boost states (Device may become unstable)", cpufreq_unlock),
+
 };
 
 void cpufreq_help(const char *cmd, char *args)

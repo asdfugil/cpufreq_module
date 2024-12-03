@@ -18,6 +18,8 @@
 #define CLUSTER_PSTATE_STATUS_TARGET_PS_S8000    GENMASK(3, 0)
 #define CLUSTER_PSTATE_STATUS_ACTUAL_PS_S8000    GENMASK(7, 4)
 
+#define CLUSTER_PSTATE_TRANSITION_TIMEOUT         400
+
 
 // PSINFO: holds the frequency, voltage and boost information for each P-State
 // state 0 - 7, PSINFO1

@@ -72,8 +72,6 @@ __attribute__((visibility("default"))) void module_entry(void)
         }
 
         if (addr && FIELD_GET(CLUSTER_PSINFO_MAX_DVMR_WEIGHT, read64(addr)) != 15) {
-            set64(addr, FIELD_PREP(CLUSTER_PSINFO_MAX_DVMR_WEIGHT, 15));
-
             if (!data.max_nonboost_pstate)
                 data.max_nonboost_pstate = max_config_state - 1;
         }
