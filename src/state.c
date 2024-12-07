@@ -28,7 +28,8 @@ int set_state_s8000(uint64_t cluster_base, int state)
     reg |= FIELD_PREP(CLUSTER_PSTATE_CMD_PS2, state);
     reg |= CLUSTER_PSTATE_CMD_SET;
 
-    if (poll64(cluster_base + CLUSTER_PSTATE_CMD, CLUSTER_PSTATE_CMD_BUSY, 0, CLUSTER_PSTATE_TRANSITION_TIMEOUT) < 0) {
+    if (poll64(cluster_base + CLUSTER_PSTATE_CMD, CLUSTER_PSTATE_CMD_BUSY, 0,
+               CLUSTER_PSTATE_TRANSITION_TIMEOUT) < 0) {
         printf("cpufreq: Failed to set CPU state\n");
         return -1;
     }
@@ -40,7 +41,8 @@ int set_state_s8000(uint64_t cluster_base, int state)
         printf("cpufreq: P-state switching timed out. Current state: %llu\n", get_state());
 
         if (state >= data.max_nonboost_pstate)
-            printf("cpufreq: Boost states are locked. Unlock them using `cpufreq unlock`.\n(Device may become unstable)\n");
+            printf("cpufreq: Boost states are locked. Unlock them using `cpufreq unlock`.\n(Device "
+                   "may become unstable)\n");
 
         return -1;
     }

@@ -10,7 +10,6 @@
 #define FIELD_PREP(field, val) ((val) * (_FIELD_LSB(field)))
 #define FIELD_GET(field, val)  (((val) & (field)) / _FIELD_LSB(field))
 
-
 #define _concat(a, _1, b, ...) a##b
 
 #define _sr_tkn_S(_0, _1, op0, op1, CRn, CRm, op2) s##op0##_##op1##_c##CRn##_c##CRm##_##op2
@@ -21,7 +20,7 @@
 
 #define __mrs(reg)                                                                                 \
     ({                                                                                             \
-        uint64_t val;                                                                                   \
+        uint64_t val;                                                                              \
         __asm__ volatile("mrs\t%0, " #reg : "=r"(val));                                            \
         val;                                                                                       \
     })
@@ -29,7 +28,7 @@
 
 #define __msr(reg, val)                                                                            \
     ({                                                                                             \
-        uint64_t __val = (u64)val;                                                                      \
+        uint64_t __val = (u64)val;                                                                 \
         __asm__ volatile("msr\t" #reg ", %0" : : "r"(__val));                                      \
     })
 #define _msr(reg, val) __msr(reg, val)
@@ -75,9 +74,8 @@ static inline void udelay(uint32_t d)
     uint64_t val = mrs(CNTPCT_EL0);
     while ((mrs(CNTPCT_EL0) - val) < delay)
         ;
-    __asm__ ("isb");
+    __asm__("isb");
 }
-
 
 static inline int poll32(uint64_t addr, uint64_t mask, uint64_t target, uint64_t timeout)
 {

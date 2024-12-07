@@ -6,7 +6,12 @@
 
 uint64_t get_frequency_for_state(int state)
 {
-    return data.hw_config->get_frequency_for_state(data.hw_config->cluster_base, state);
+    uint64_t freq = data.hw_config->get_frequency_for_state(data.hw_config->cluster_base, state);
+
+    if (!freq)
+        freq = BASE_CLOCK;
+
+    return freq;
 }
 
 int set_state(int state)
@@ -45,6 +50,10 @@ void cpufreq_show(const char *cmd, char *args)
     if (data.hw_config->get_core_type_for_state)
         printf("Current CPU type        : %s\n", core_type_array[get_core_type_for_state(state)]);
 
+    if (data.hw_config->get_vcore)
+        printf("Vcore                   : %u mV\n",
+               data.hw_config->get_vcore(data.hw_config->cluster_base, state));
+
     if ((state > data.max_nonboost_pstate) && (state <= data.max_configured_pstate))
         printf("Boost state\n");
 }
@@ -57,6 +66,10 @@ void cpufreq_dump(const char *cmd, char *args)
         printf("CPU frequency   : %llu Hz\n", get_frequency_for_state(i));
         if (data.hw_config->get_core_type_for_state)
             printf("CPU type        : %s\n", core_type_array[get_core_type_for_state(i)]);
+
+        if (data.hw_config->get_vcore)
+            printf("Vcore           : %u mV\n",
+                   data.hw_config->get_vcore(data.hw_config->cluster_base, i));
 
         if ((i > data.max_nonboost_pstate) && (i <= data.max_configured_pstate))
             printf("Boost state\n");
@@ -100,7 +113,8 @@ void cpufreq_unlock(const char *cmd, char *args)
             case 0x8010:
             case 0x8011:
             case 0x8012:
-                addr = data.hw_config->cluster_base + CLUSTER_PSINFO2_T8010(i);;
+                addr = data.hw_config->cluster_base + CLUSTER_PSINFO2_T8010(i);
+                ;
                 break;
             case 0x8015:
                 addr = data.hw_config->cluster_base + CLUSTER_PSINFO2_T8015(i);
@@ -112,8 +126,24 @@ void cpufreq_unlock(const char *cmd, char *args)
             return;
         }
 
-        mask64(addr, CLUSTER_PSINFO_MAX_DVMR_WEIGHT, FIELD_PREP(CLUSTER_PSINFO_MAX_DVMR_WEIGHT, 15));
+        mask64(addr, CLUSTER_PSINFO_MAX_DVMR_WEIGHT,
+               FIELD_PREP(CLUSTER_PSINFO_MAX_DVMR_WEIGHT, 15));
     }
+}
+
+void cpufreq_magic(const char *cmd, char *args)
+{
+    if (data.hw_config->apply_magic)
+        set_state(data.hw_config->apply_magic(data.hw_config));
+    else
+        printf("cpufreq: No magic available for this SoC\n");
+}
+
+void cpufreq_bench(const char *cmd, char *args)
+{
+    uint64_t hz = bench();
+
+    printf("CPU frequency: %lld Hz\n", hz);
 }
 
 #define CPUFREQ_COMMAND(_name, _desc, _cb)                                                         \
@@ -127,8 +157,9 @@ static struct cpufreq_command command_table[] = {
     CPUFREQ_COMMAND("dump", "Dump available CPU states", cpufreq_dump),
     CPUFREQ_COMMAND("set", "Set CPU state", cpufreq_set),
     CPUFREQ_COMMAND("show", "Get current CPU information", cpufreq_show),
+    CPUFREQ_COMMAND("bench", "Measure CPU frequency", cpufreq_bench),
     CPUFREQ_COMMAND("unlock", "Unlock boost states (Device may become unstable)", cpufreq_unlock),
-
+    CPUFREQ_COMMAND("magic", "Apply magic (DANGEROUS)", cpufreq_magic),
 };
 
 void cpufreq_help(const char *cmd, char *args)

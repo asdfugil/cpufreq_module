@@ -4,6 +4,8 @@
 #include "cpufreq_private.h"
 #include "utils.h"
 
+uint32_t board_id;
+
 __attribute__((visibility("default"))) char *module_name = "cpufreq";
 
 __attribute__((visibility("default"))) void module_entry(void)
@@ -40,6 +42,8 @@ __attribute__((visibility("default"))) void module_entry(void)
             return;
     };
 
+    board_id = *((uint32_t *)dt_prop(dt_find(gDeviceTree, "/chosen"), "board-id", NULL));
+
     write32(data.hw_config->voltage_ctl, 1);
 
     if (data.hw_config->hw_init)
@@ -64,7 +68,8 @@ __attribute__((visibility("default"))) void module_entry(void)
             case 0x8010:
             case 0x8011:
             case 0x8012:
-                addr = data.hw_config->cluster_base + CLUSTER_PSINFO2_T8010(max_config_state);;
+                addr = data.hw_config->cluster_base + CLUSTER_PSINFO2_T8010(max_config_state);
+                ;
                 break;
             case 0x8015:
                 addr = data.hw_config->cluster_base + CLUSTER_PSINFO2_T8015(max_config_state);
@@ -78,14 +83,14 @@ __attribute__((visibility("default"))) void module_entry(void)
     }
 
     if (!data.max_nonboost_pstate)
-        data.max_nonboost_pstate = max_config_state;
+        data.max_nonboost_pstate = max_config_state - 1;
 
     data.max_configured_pstate = max_config_state - 1;
 
     set64(data.hw_config->cluster_base + 0x200f8, BIT(40));
 
-        printf("cpufreq: CPU state: %llu -> %u\n", get_state(), data.max_nonboost_pstate);
-        set_state(data.max_nonboost_pstate);
+    printf("cpufreq: CPU state: %llu -> %u\n", get_state(), data.max_nonboost_pstate);
+    set_state(data.max_nonboost_pstate);
 
     command_register("cpufreq", "CPU frequency scaling", cpufreq_cmd);
     return;

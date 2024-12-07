@@ -3,18 +3,9 @@
 #include "cpufreq_private.h"
 #include "utils.h"
 
-#define BASE_CLOCK             24000000
 #define FREQ_INFO_OFF_S5L8960X 0x20068
 #define FREQ_INFO_OFF_T8010    0x80000
 #define FREQ_INFO_OFF_T8015    0x70000
-
-#define P_S5L8960X GENMASK(17, 13)
-#define M_S5L8960X GENMASK(12, 4)
-#define S_S5L8960X GENMASK(3, 0)
-
-#define P_S8000 GENMASK(16, 14)
-#define M_S8000 GENMASK(13, 4)
-#define S_S8000 GENMASK(3, 0)
 
 #define CORE_TYPE_T8010 BIT(23)
 
@@ -44,7 +35,6 @@ static uint64_t t8015_freq_info_to_freq(uint64_t reg)
 
     return (M * BASE_CLOCK) / (S * 2 + 2);
 }
-
 
 static uint64_t t8010_freq_info_to_freq(uint64_t reg)
 {
