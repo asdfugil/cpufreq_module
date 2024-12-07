@@ -34,7 +34,9 @@ int set_state_s8000(uint64_t cluster_base, int state)
         return -1;
     }
 
-    mask64(cluster_base + CLUSTER_PSTATE_CMD, CLUSTER_PSTATE_CMD_PS1 | CLUSTER_PSTATE_CMD_PS2, reg);
+    write64(cluster_base + CLUSTER_PSTATE_CMD, reg);
+    // mask64(cluster_base + CLUSTER_PSTATE_CMD, CLUSTER_PSTATE_CMD_PS1 | CLUSTER_PSTATE_CMD_PS2,
+    // reg);
     if (poll32(cluster_base + CLUSTER_PSTATE_STATUS,
                CLUSTER_PSTATE_STATUS_TARGET_PS_S8000 | CLUSTER_PSTATE_STATUS_ACTUAL_PS_S8000,
                state | state << 4, 1000)) {

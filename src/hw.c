@@ -97,6 +97,7 @@ const struct cpufreq_hw_config t8012_config = {
 const struct cpufreq_hw_config t8015_config = {
     .max_pstate = 15,
     .iboot_state = 2,
+    .apply_magic = apply_magic_t8015,
     .cluster_base = 0x208e00000,
     .pcluster_base = 0x208e80000,
     .voltage_ctl = 0x2320a0000,
