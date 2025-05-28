@@ -126,7 +126,7 @@ void cpufreq_unlock(const char *cmd, char *args)
             return;
         }
 
-        mask64(addr, CLUSTER_PSINFO_MAX_LOAD, FIELD_PREP(CLUSTER_PSINFO_MAX_LOAD, 15));
+        mask64(addr, CLUSTER_PSINFO2_MAX_LOAD, FIELD_PREP(CLUSTER_PSINFO2_MAX_LOAD, 15));
     }
 }
 

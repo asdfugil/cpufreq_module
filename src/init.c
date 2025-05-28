@@ -76,7 +76,7 @@ __attribute__((visibility("default"))) void module_entry(void)
                 break;
         }
 
-        if (addr && FIELD_GET(CLUSTER_PSINFO_MAX_LOAD, read64(addr)) != 15) {
+        if (addr && FIELD_GET(CLUSTER_PSINFO2_MAX_LOAD, read64(addr)) != 15) {
             if (!data.max_nonboost_pstate)
                 data.max_nonboost_pstate = max_config_state - 1;
         }

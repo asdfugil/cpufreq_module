@@ -5,7 +5,6 @@
 
 int set_state_s5l8960x(uint64_t cluster_base, int state)
 {
-
     uint64_t reg = 0;
     reg |= FIELD_PREP(CLUSTER_PSTATE_CMD_PS3, state);
     reg |= CLUSTER_PSTATE_CMD_SET;
@@ -13,7 +12,7 @@ int set_state_s5l8960x(uint64_t cluster_base, int state)
     mask64(cluster_base + CLUSTER_PSTATE_CMD, CLUSTER_PSTATE_CMD_PS3, reg);
     if (poll32(cluster_base + CLUSTER_PSTATE_STATUS,
                CLUSTER_PSTATE_STATUS_ACTUAL_PS_S5L8960X | CLUSTER_PSTATE_STATUS_TARGET_PS_S5L8960X,
-               state | state << 3, 1000)) {
+               state | state << 3, 2000)) {
         printf("cpufreq: P-state switching timed out\n");
 
         return -1;

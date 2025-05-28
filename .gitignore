@@ -1,2 +1,3 @@
 cpufreq
 *.o
+.DS_Store
