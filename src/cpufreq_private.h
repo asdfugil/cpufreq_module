@@ -138,11 +138,13 @@ void s8000_hw_init(uint64_t cluster_base);
 void t8015_hw_init(uint64_t cluster_base);
 
 /* SoC-specific Overclocking functions */
+int apply_magic_s5l8960x(const struct cpufreq_hw_config *config);
 int apply_magic_s800x(const struct cpufreq_hw_config *config);
 int apply_magic_t8010(const struct cpufreq_hw_config *config);
 int apply_magic_t8015(const struct cpufreq_hw_config *config);
 
 /* SoC-specific Voltage functions */
+uint32_t get_vcore_s5l8960x(uint64_t cluster_base, uint32_t state);
 uint32_t get_vcore_s800x(uint64_t cluster_base, uint32_t state);
 uint32_t get_vcore_t8010(uint64_t cluster_base, uint32_t state);
 #endif

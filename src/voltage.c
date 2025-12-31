@@ -5,6 +5,13 @@
 
 /* Core voltage */
 
+uint32_t get_vcore_s5l8960x(uint64_t cluster_base, uint32_t state)
+{
+    uint64_t psinfo1 = read64(cluster_base + CLUSTER_PSINFO1_S5L8960X(state));
+    uint32_t v = FIELD_GET(CLUSTER_PSINFO1_VCORE_S8000, psinfo1);
+    return 600 + ((v * 3125) / 1000);
+}
+
 uint32_t get_vcore_s800x(uint64_t cluster_base, uint32_t state)
 {
     uint64_t psinfo1 = read64(cluster_base + CLUSTER_PSINFO1_S5L8960X(state));
