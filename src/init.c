@@ -87,8 +87,6 @@ __attribute__((visibility("default"))) void module_entry(void)
 
     data.max_configured_pstate = max_config_state - 1;
 
-    set64(data.hw_config->cluster_base + 0x200f8, BIT(40));
-
     printf("cpufreq: CPU state: %llu -> %u\n", get_state(), data.max_nonboost_pstate);
     set_state(data.max_nonboost_pstate);
 
