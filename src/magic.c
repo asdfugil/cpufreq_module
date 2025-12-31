@@ -7,12 +7,12 @@
 
 int apply_magic_s5l8960x(const struct cpufreq_hw_config *config)
 {
-    ((uint32_t *)dt_prop(dt_find(gDeviceTree, "/arm-io/pmgr"), "voltage-states", NULL))[12] =
+    ((uint32_t *)dt_prop(dt_find(gDeviceTree, "/arm-io/pmgr"), "voltage-states1", NULL))[12] =
         0xb7e8; // 1392 MHz
-    ((uint32_t *)dt_prop(dt_find(gDeviceTree, "/arm-io/pmgr"), "voltage-states", NULL))[13] =
-        0x4e2; // 1250 mV
+    ((uint32_t *)dt_prop(dt_find(gDeviceTree, "/arm-io/pmgr"), "voltage-states1", NULL))[13] =
+        0x497; // 1175 mV
     write64(config->cluster_base + CLUSTER_PSINFO1_S5L8960X(6),
-            0x0000000007200000 | FIELD_PREP(CLUSTER_PSINFO1_VCORE_S8000, 0xd0) |
+            0x0000000000380000 | FIELD_PREP(CLUSTER_PSINFO1_VCORE_S8000, 0xb8) |
                 FIELD_PREP(MUL_S5L8960X, 0x3a) | FIELD_PREP(DIV1_S5L8960X, 1) | FIELD_PREP(DIV2_S5L8960X, 0));
 
     return 6;
