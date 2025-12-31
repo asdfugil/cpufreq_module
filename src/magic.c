@@ -5,6 +5,19 @@
 
 /* Actually just overclock */
 
+int apply_magic_s5l8960x(const struct cpufreq_hw_config *config)
+{
+    ((uint32_t *)dt_prop(dt_find(gDeviceTree, "/arm-io/pmgr"), "voltage-states1", NULL))[12] =
+        0xb7e8; // 1392 MHz
+    ((uint32_t *)dt_prop(dt_find(gDeviceTree, "/arm-io/pmgr"), "voltage-states1", NULL))[13] =
+        0x497; // 1175 mV
+    write64(config->cluster_base + CLUSTER_PSINFO1_S5L8960X(6),
+            0x0000000000380000 | FIELD_PREP(CLUSTER_PSINFO1_VCORE_S8000, 0xb8) |
+                FIELD_PREP(MUL_S5L8960X, 0x3a) | FIELD_PREP(DIV1_S5L8960X, 1) | FIELD_PREP(DIV2_S5L8960X, 0));
+
+    return 6;
+}
+
 int apply_magic_s800x(const struct cpufreq_hw_config *config)
 {
     ((uint32_t *)dt_prop(dt_find(gDeviceTree, "/arm-io/pmgr"), "voltage-states1", NULL))[12] =
@@ -75,18 +88,18 @@ int apply_magic_t8015(const struct cpufreq_hw_config *config)
     // vcore = (psinfo1_vcore * 3125 - 500) / 1000 + 375 mV
     // vsram = (psinfo2_vsram * 3125 - 500) / 1000 + 600 mV
 
-    write64(config->cluster_base + CLUSTER_PSINFO1_T8015(7), 
+    write64(config->cluster_base + CLUSTER_PSINFO1_T8015(7),
         0x0000000808200000 | FIELD_PREP(CLUSTER_PSINFO1_VCORE_S8000, 0xdc)
         | FIELD_PREP(MUL_S8000, 0xb0) | FIELD_PREP(DIV_S8000, 0));
-    write64(config->cluster_base + CLUSTER_PSINFO2_T8015(7), 
+    write64(config->cluster_base + CLUSTER_PSINFO2_T8015(7),
         0x450040008d000000 | FIELD_PREP(CLUSTER_PSINFO2_MAX_LOAD, 15)
         | FIELD_PREP(CLUSTER_PSINFO2_VSRAM_T8015, 0xb8));
     write64(config->cluster_base + CLUSTER_PSINFO3_T8015(7), 0x4600);
 
-    write64(config->pcluster_base + CLUSTER_PSINFO1_T8015(8), 
+    write64(config->pcluster_base + CLUSTER_PSINFO1_T8015(8),
         0x0000000808200000 | FIELD_PREP(CLUSTER_PSINFO1_VCORE_S8000, 0xdc)
         | FIELD_PREP(MUL_S8000, 0xe4) | FIELD_PREP(DIV_S8000, 0));
-    write64(config->pcluster_base + CLUSTER_PSINFO2_T8015(8), 
+    write64(config->pcluster_base + CLUSTER_PSINFO2_T8015(8),
         0x570040008d000000 | FIELD_PREP(CLUSTER_PSINFO2_MAX_LOAD, 15)
         | FIELD_PREP(CLUSTER_PSINFO2_VSRAM_T8015, 0xdc));
     write64(config->pcluster_base + CLUSTER_PSINFO3_T8015(8), 0x4900);
